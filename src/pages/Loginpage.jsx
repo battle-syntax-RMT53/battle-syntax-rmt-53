@@ -10,14 +10,14 @@ export default function LoginPage() {
     const storedUsername = localStorage.getItem("username");
     if (storedUsername) {
       setUsername(storedUsername);
-      navigate("/room"); // Arahkan ke RoomPage jika sudah ada username
+      navigate("/rooms"); // Arahkan ke RoomPage jika sudah ada username
     }
   }, [navigate]);
 
   const handleLogin = () => {
     if (username) {
       localStorage.setItem("username", username); // Simpan username di localStorage
-      navigate("/room");
+      navigate("/rooms");
     } else {
       alert("Please enter a username.");
     }
