@@ -1,0 +1,51 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
+export default function LoginPage() {
+  const [username, setUsername] = useState("");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Memeriksa apakah username sudah disimpan di localStorage
+    const storedUsername = localStorage.getItem("username");
+    if (storedUsername) {
+      setUsername(storedUsername);
+      navigate("/room"); // Arahkan ke RoomPage jika sudah ada username
+    }
+  }, [navigate]);
+
+  const handleLogin = () => {
+    if (username) {
+      localStorage.setItem("username", username); // Simpan username di localStorage
+      navigate("/room");
+    } else {
+      alert("Please enter a username.");
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center h-screen bg-gray-100 gap-6">
+      <h1 className="text-3xl font-bold">Login</h1>
+      <label className="input input-bordered flex items-center gap-2">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16"
+          fill="currentColor"
+          className="h-4 w-4 opacity-70"
+        >
+          <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM12.735 14c.618 0 1.093-.561.872-1.139a6.002 6.002 0 0 0-11.215 0c-.22.578.254 1.139.872 1.139h9.47Z" />
+        </svg>
+        <input
+          type="text"
+          className="grow"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
+      </label>
+      <button onClick={handleLogin} className="btn btn-primary px-8">
+        Login
+      </button>
+    </div>
+  );
+}
