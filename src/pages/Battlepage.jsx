@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ref, runTransaction, onValue } from "firebase/database";
+import { ref, runTransaction, onValue, remove } from "firebase/database";
 import { useParams, useNavigate } from "react-router-dom";
 import db from "../firebase"; // Firebase setup
 
@@ -44,7 +44,6 @@ export default function Battlepage() {
         setTargetSyntax(syntaxes[roomData.currentSyntaxIndex] || "");
         setIsGameActive(true);
       } else {
-        alert("Room not found.");
         navigate("/rooms");
       }
     });
@@ -136,6 +135,8 @@ export default function Battlepage() {
   const endGame = () => {
     setIsGameActive(false);
     alert(creatorHealth <= 0 ? "You lost!" : "You won!");
+    const roomRef = ref(db, `rooms/${roomId}`);
+    remove(roomRef);
     navigate("/rooms");
   };
 
