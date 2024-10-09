@@ -68,7 +68,7 @@ const RoomPage = () => {
             users: 1,
             creator: storedUsername,
             syntaxList: randomizedSyntaxList, // Store the randomized syntax list
-            creatorHealth: 40,
+            creatorHealth: 50,
             currentSyntaxIndex: 0,
           })
             .then(() => {
@@ -101,14 +101,14 @@ const RoomPage = () => {
             icon: "error",
             confirmButtonText: "OK",
           });
-          throw new Error; // Return without changes
+          throw new Error(); // Return without changes
         }
 
         // Update room
         room.users += 1; // Tambah pengguna
         room.participants = {
           participantName: storedUsername,
-          participantHealth: 40,
+          participantHealth: 50,
         };
       }
       return room; // Kembalikan room yang sudah diupdate
@@ -122,8 +122,8 @@ const RoomPage = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
-      <h1 className="text-3xl font-bold mb-6">Typing Game Rooms</h1>
+    <div className="flex flex-col items-center justify-center h-screen">
+      <h1 className="text-3xl font-bold mb-6">Battle Syntax Rooms</h1>
       <input
         type="text"
         placeholder="Room Name"
@@ -133,23 +133,25 @@ const RoomPage = () => {
       />
       <button
         onClick={createRoom}
-        className="bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg mb-4"
+        className="bg-primary text-primary-content font-semibold py-2 px-4 rounded-lg mb-4"
       >
         Create Room
       </button>
-      <h2 className="text-xl font-semibold mb-4">Available Rooms</h2>
+      {rooms.length > 0 && (
+        <h2 className="text-xl font-semibold mb-4 mt-10">Available Rooms</h2>
+      )}
       <div className="flex flex-wrap justify-center">
         {rooms.map((room) => (
           <div
             key={room.id}
-            className="bg-white border border-gray-300 rounded-lg p-4 m-2 w-64"
+            className="border border-gray-300 rounded-lg p-4 m-2 w-64"
           >
             <h3 className="font-bold">Room Name: {room.name}</h3>
             <h3 className="font-bold">Room ID: {room.id}</h3>
             <p>Users: {room.users} / 2</p>
             <button
               onClick={() => joinRoom(room.id)}
-              className="bg-green-500 text-white font-semibold py-1 px-2 rounded-lg mt-2"
+              className="bg-warning text-info-content font-semibold py-1 px-2 rounded-lg mt-2"
             >
               Join Room
             </button>
