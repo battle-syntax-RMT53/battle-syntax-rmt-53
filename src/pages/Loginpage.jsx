@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -19,7 +20,12 @@ export default function LoginPage() {
       localStorage.setItem("username", username); // Simpan username di localStorage
       navigate("/rooms");
     } else {
-      alert("Please enter a username.");
+      Swal.fire({
+        title: "Error!",
+        text: "Please enter a username.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
     }
   };
 

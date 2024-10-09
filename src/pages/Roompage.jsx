@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { ref, set, onValue, runTransaction, get } from "firebase/database";
 import db from "../firebase";
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 const RoomPage = () => {
   const [roomName, setRoomName] = useState("");
@@ -28,7 +29,12 @@ const RoomPage = () => {
 
   const createRoom = () => {
     if (!roomName) {
-      alert("Please enter a room name");
+      Swal.fire({
+        title: "Warning!",
+        text: "Please enter a room name",
+        icon: "warning",
+        confirmButtonText: "OK",
+      });
       return;
     }
 
@@ -89,8 +95,13 @@ const RoomPage = () => {
 
         // Cek jika room sudah penuh
         if (room.users >= 2) {
-          alert("Room is full.");
-          return; // Kembali tanpa perubahan
+          Swal.fire({
+            title: "Error!",
+            text: "Room is full.",
+            icon: "error",
+            confirmButtonText: "OK",
+          });
+          return; // Return without changes
         }
 
         // Update room

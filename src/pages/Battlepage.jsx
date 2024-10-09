@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { ref, runTransaction, onValue } from "firebase/database";
 import { useParams, useNavigate } from "react-router-dom";
 import db from "../firebase"; // Firebase setup
+import Swal from "sweetalert2";
 
 export default function Battlepage() {
   const { roomId } = useParams();
@@ -135,8 +136,17 @@ export default function Battlepage() {
 
   const endGame = () => {
     setIsGameActive(false);
-    alert(creatorHealth <= 0 ? "You lost!" : "You won!");
-    navigate("/rooms");
+    const message = creatorHealth <= 0 ? "You lost!" : "You won!";
+
+    // Use SweetAlert for the win/loss message
+    Swal.fire({
+      title: "Game Over",
+      text: message,
+      icon: creatorHealth <= 0 ? "error" : "success",
+      confirmButtonText: "OK",
+    }).then(() => {
+      navigate("/rooms");
+    });
   };
 
   // Check if game is over
