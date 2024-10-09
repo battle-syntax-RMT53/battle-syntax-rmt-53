@@ -174,6 +174,7 @@ export default function Battlepage() {
             value={userInput}
             onChange={handleChange}
             className="w-full rounded-md px-4 border-2"
+            autoFocus
           />
         </div>
       ) : (
