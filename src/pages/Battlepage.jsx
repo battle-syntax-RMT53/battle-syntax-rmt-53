@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ref, runTransaction, onValue } from "firebase/database";
+import { ref, runTransaction, onValue, remove } from "firebase/database";
 import { useParams, useNavigate } from "react-router-dom";
 import db from "../firebase"; // Firebase setup
 import Swal from "sweetalert2";
@@ -45,7 +45,6 @@ export default function Battlepage() {
         setTargetSyntax(syntaxes[roomData.currentSyntaxIndex] || "");
         setIsGameActive(true);
       } else {
-        alert("Room not found.");
         navigate("/rooms");
       }
     });
@@ -145,6 +144,8 @@ export default function Battlepage() {
       icon: creatorHealth <= 0 ? "error" : "success",
       confirmButtonText: "OK",
     }).then(() => {
+      const roomRef = ref(db, `rooms/${roomId}`);
+      remove(roomRef);
       navigate("/rooms");
     });
   };
