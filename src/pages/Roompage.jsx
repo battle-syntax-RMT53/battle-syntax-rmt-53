@@ -62,7 +62,8 @@ const RoomPage = () => {
             users: 1,
             creator: storedUsername,
             syntaxList: randomizedSyntaxList, // Store the randomized syntax list
-            enemyHealth: 40, // Initialize enemy health
+            creatorHealth: 40,
+            currentSyntaxIndex: 0,
           })
             .then(() => {
               navigate(`/rooms/${roomId}`);
@@ -94,8 +95,10 @@ const RoomPage = () => {
 
         // Update room
         room.users += 1; // Tambah pengguna
-        room.participants = room.participants || []; // Inisialisasi jika belum ada
-        room.participants.push(storedUsername); // Tambah pengguna ke daftar peserta
+        room.participants = {
+          participantName: storedUsername,
+          participantHealth: 40,
+        };
       }
       return room; // Kembalikan room yang sudah diupdate
     })

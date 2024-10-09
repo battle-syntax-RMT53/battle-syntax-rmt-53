@@ -1,141 +1,73 @@
-// import { useState } from "react";
-
-// export default function Battlepage() {
-//   const [targetSyntax, setTargetSyntax] = useState("");
-//   const [userInput, setUserInput] = useState("");
-//   const [isGameActive, setIsGameActive] = useState(false);
-//   const [enemyHealth, setEnemyHealth] = useState(20);
-
-//   const syntaxs = [
-//     "console.log();",
-//     "const express = require('express');",
-//     "const app = express();",
-//   ];
-
-//   const startGame = () => {
-//     prepareSyntax();
-//     setIsGameActive(true);
-//   };
-
-//   const prepareSyntax = () => {
-//     const randomIndex = Math.floor(Math.random() * syntaxs.length);
-//     setTargetSyntax(syntaxs[randomIndex]);
-//     setUserInput("");
-//   };
-
-//   const handleChange = (e) => {
-//     const value = e.target.value;
-//     setUserInput(value);
-
-//     if (value === targetSyntax) {
-//       const damage = 10;
-//       console.log(enemyHealth, "ENEMY HEALTH BEFORE SET");
-//       setEnemyHealth((prev) => prev - damage);
-//       console.log(enemyHealth, "ENEMY HEALTH AFTER SET");
-//       if (enemyHealth <= 10) {
-//         endGame();
-//       } else {
-//         prepareSyntax();
-//       }
-//     }
-//   };
-
-//   const getHighlightedText = () => {
-//     const textArray = targetSyntax.split("");
-//     const inputArray = userInput.split("");
-
-//     return textArray.map((char, index) => {
-//       let className = "";
-//       if (inputArray[index] === char) {
-//         className = "text-green-200";
-//       } else if (inputArray[index] !== undefined) {
-//         className = "text-red-800";
-//       }
-
-//       return (
-//         <span key={index} className={className}>
-//           {char}
-//         </span>
-//       );
-//     });
-//   };
-
-//   const endGame = () => {
-//     setIsGameActive(false);
-//     console.log("You win!");
-//   };
-
-//   return (
-//     <div className="flex flex-col h-screen items-center justify-center gap-6">
-//       <h1 className="text-3xl">Battle Syntax</h1>
-//       {isGameActive ? (
-//         <div className="flex flex-col justify-center items-center gap-4">
-//           <p>Enemy Health: {enemyHealth}</p>
-//           <div className="bg-secondary px-5 py-3 rounded-md">
-//             {getHighlightedText()}
-//           </div>
-//           <input
-//             type="text"
-//             value={userInput}
-//             onChange={handleChange}
-//             className="w-full rounded-md px-4"
-//           />
-//         </div>
-//       ) : (
-//         <button className="btn btn-primary" onClick={startGame}>
-//           Start Game
-//         </button>
-//       )}
-//     </div>
-//   );
-// }
-
 import { useState, useEffect } from "react";
-import { ref, get } from "firebase/database";
+import { ref, runTransaction, onValue } from "firebase/database";
 import { useParams, useNavigate } from "react-router-dom";
 import db from "../firebase"; // Firebase setup
 
 export default function Battlepage() {
   const { roomId } = useParams();
   const navigate = useNavigate();
+  const username = localStorage.getItem("username");
 
+  const [creatorHealth, setCreatorHealth] = useState(20);
+  const [participantHealth, setParticipantHealth] = useState(20);
   const [targetSyntax, setTargetSyntax] = useState("");
   const [userInput, setUserInput] = useState("");
   const [isGameActive, setIsGameActive] = useState(false);
-  const [enemyHealth, setEnemyHealth] = useState(20);
+  const [countdown, setCountdown] = useState(5);
   const [currentSyntaxIndex, setCurrentSyntaxIndex] = useState(0);
   const [syntaxList, setSyntaxList] = useState([]);
 
-  // Fetch the randomized syntax list when component mounts
+  // Fetch initial room data and subscribe to room updates
   useEffect(() => {
     const roomRef = ref(db, `rooms/${roomId}`);
 
-    // Get room data
-    get(roomRef)
-      .then((snapshot) => {
-        if (snapshot.exists()) {
-          const roomData = snapshot.val();
-          const syntaxes = roomData.syntaxList || [];
-          const health = roomData.enemyHealth;
-          setEnemyHealth(health);
+    const unsubscribe = onValue(roomRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const roomData = snapshot.val();
+        const syntaxes = roomData.syntaxList || [];
 
-          if (syntaxes.length > 0) {
-            setSyntaxList(syntaxes);
-            setTargetSyntax(syntaxes[0]); // Set the first syntax as the target
-            setIsGameActive(true); // Start the game
-          } else {
-            alert("No syntax available.");
+        // Set health based on player identity
+        const isPlayer1 = roomData.creator === username;
+        setCreatorHealth(
+          isPlayer1
+            ? roomData.creatorHealth
+            : roomData.participants.participantHealth
+        );
+        setParticipantHealth(
+          isPlayer1
+            ? roomData.participants.participantHealth
+            : roomData.creatorHealth
+        );
+
+        setSyntaxList(syntaxes);
+        setCurrentSyntaxIndex(roomData.currentSyntaxIndex || 0);
+        setTargetSyntax(syntaxes[roomData.currentSyntaxIndex] || "");
+        setIsGameActive(true);
+      } else {
+        alert("Room not found.");
+        navigate("/rooms");
+      }
+    });
+
+    return () => unsubscribe();
+  }, [roomId, username, navigate]);
+
+  // Countdown effect
+  useEffect(() => {
+    if (isGameActive) {
+      const timer = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev === 1) {
+            clearInterval(timer);
+            return 0; // Stop countdown
           }
-        } else {
-          alert("Room not found.");
-          navigate("/rooms"); // Redirect if room doesn't exist
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching room data: ", error);
-        alert("An error occurred while fetching room data.");
-      });
-  }, [roomId, navigate]);
+          return prev - 1; // Decrease countdown
+        });
+      }, 1000);
+
+      return () => clearInterval(timer); // Cleanup on unmount
+    }
+  }, [isGameActive]);
 
   // Handle user input and check if it matches the target syntax
   const handleChange = (e) => {
@@ -144,21 +76,40 @@ export default function Battlepage() {
 
     if (value === targetSyntax) {
       const damage = 10;
-      setEnemyHealth((prev) => prev - damage);
+      const roomRef = ref(db, `rooms/${roomId}`);
 
-      if (enemyHealth <= 10) {
-        endGame(); // End game if enemy health is too low
-      } else {
-        // Move to the next syntax if available
-        if (currentSyntaxIndex < syntaxList.length - 1) {
-          const nextIndex = currentSyntaxIndex + 1;
-          setCurrentSyntaxIndex(nextIndex);
-          setTargetSyntax(syntaxList[nextIndex]);
-          setUserInput(""); // Reset the user input for the next syntax
-        } else {
-          endGame(); // End game if no more syntaxes
+      runTransaction(roomRef, (roomData) => {
+        if (roomData) {
+          const isPlayer1 = roomData.creator === username;
+
+          if (isPlayer1) {
+            roomData.participants.participantHealth = Math.max(
+              0,
+              roomData.participants.participantHealth - damage
+            );
+          } else {
+            roomData.creatorHealth = Math.max(
+              0,
+              roomData.creatorHealth - damage
+            );
+          }
+
+          const nextIndex = roomData.currentSyntaxIndex + 1;
+          if (nextIndex < syntaxList.length) {
+            roomData.currentSyntaxIndex = nextIndex;
+            roomData.targetSyntax = syntaxList[nextIndex];
+          }
+
+          return roomData;
         }
-      }
+        return null;
+      })
+        .then(() => {
+          setUserInput(""); // Clear user input for the next round
+        })
+        .catch((error) => {
+          console.error("Error updating the game state: ", error);
+        });
     }
   };
 
@@ -184,15 +135,26 @@ export default function Battlepage() {
 
   const endGame = () => {
     setIsGameActive(false);
-    alert("You win!");
+    alert(creatorHealth <= 0 ? "You lost!" : "You won!");
+    navigate("/rooms");
   };
+
+  // Check if game is over
+  useEffect(() => {
+    if (creatorHealth <= 0 || participantHealth <= 0) {
+      endGame();
+    }
+  }, [creatorHealth, participantHealth]);
 
   return (
     <div className="flex flex-col h-screen items-center justify-center gap-6">
       <h1 className="text-3xl">Battle Syntax</h1>
-      {isGameActive ? (
+      {isGameActive && countdown > 0 ? (
+        <div className="text-2xl">{countdown}</div> // Display countdown
+      ) : isGameActive ? (
         <div className="flex flex-col justify-center items-center gap-4">
-          <p>Enemy Health: {enemyHealth}</p>
+          <p>Your Health: {creatorHealth}</p>
+          <p>Enemy Health: {participantHealth}</p>
           <div className="bg-secondary px-5 py-3 rounded-md">
             {getHighlightedText()}
           </div>
@@ -204,7 +166,9 @@ export default function Battlepage() {
           />
         </div>
       ) : (
-        <p>Game Over</p>
+        <button className="btn btn-primary">
+          Waiting other player to join
+        </button>
       )}
     </div>
   );
