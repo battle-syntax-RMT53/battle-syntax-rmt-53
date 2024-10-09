@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { ref, set, onValue, runTransaction } from "firebase/database";
-import db from "../firebase"; // Pastikan ini diatur dengan benar
+import { ref, set, onValue, runTransaction, get } from "firebase/database";
+import db from "../firebase";
 import { useNavigate } from "react-router-dom";
 
 const RoomPage = () => {
@@ -12,7 +12,7 @@ const RoomPage = () => {
     const storedUsername = localStorage.getItem("username");
     if (!storedUsername) {
       alert("You need to log in first!");
-      navigate("/login"); // Redirect ke halaman login
+      navigate("/login");
       return;
     }
 
@@ -35,17 +35,47 @@ const RoomPage = () => {
     const roomId = Date.now().toString();
     const storedUsername = localStorage.getItem("username");
 
-    set(ref(db, "rooms/" + roomId), {
-      name: roomName,
-      createdAt: new Date().toISOString(),
-      users: 1,
-      creator: storedUsername, // Menyimpan username pembuat room
-    })
-      .then(() => {
-        navigate(`/rooms/${roomId}`);
+    // Fetch the syntaxes from Firebase using get()
+    const syntaxesRef = ref(db, "syntaxes");
+    get(syntaxesRef)
+      .then((snapshot) => {
+        const syntaxData = snapshot.val();
+        if (syntaxData) {
+          const syntaxList = Object.values(syntaxData);
+
+          function shuffleSyntaxes(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+              // Generate a random index from 0 to i
+              const j = Math.floor(Math.random() * (i + 1));
+              // Swap elements at i and j
+              [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+          }
+
+          // Randomize the syntax list
+          const randomizedSyntaxList = shuffleSyntaxes([...syntaxList]);
+          // Store the room with the randomized list
+          set(ref(db, "rooms/" + roomId), {
+            name: roomName,
+            createdAt: new Date().toISOString(),
+            users: 1,
+            creator: storedUsername,
+            syntaxList: randomizedSyntaxList, // Store the randomized syntax list
+            enemyHealth: 40, // Initialize enemy health
+          })
+            .then(() => {
+              navigate(`/rooms/${roomId}`);
+            })
+            .catch((error) => {
+              console.error("Error creating room: ", error);
+            });
+        } else {
+          alert("No syntaxes found in the database.");
+        }
       })
       .catch((error) => {
-        console.error("Error creating room: ", error);
+        console.error("Error fetching syntaxes: ", error);
       });
   };
 
@@ -100,8 +130,7 @@ const RoomPage = () => {
             key={room.id}
             className="bg-white border border-gray-300 rounded-lg p-4 m-2 w-64"
           >
-            <h3 className="font-bold">Room Name: {room.name}</h3>{" "}
-            {/* Tampilkan nama room */}
+            <h3 className="font-bold">Room Name: {room.name}</h3>
             <h3 className="font-bold">Room ID: {room.id}</h3>
             <p>Users: {room.users} / 2</p>
             <button
