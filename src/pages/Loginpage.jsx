@@ -19,6 +19,14 @@ export default function LoginPage() {
   const handleLogin = () => {
     if (username) {
       localStorage.setItem("username", username); // Simpan username di localStorage
+      Swal.fire({
+        title: "Success!",
+        text: "You have logged in successfully.",
+        icon: "success",
+        confirmButtonText: "OK",
+      }).then(() => {
+        navigate("/rooms");
+      });
       navigate("/rooms");
     } else {
       Swal.fire({

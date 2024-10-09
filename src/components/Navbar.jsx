@@ -1,12 +1,20 @@
 import { useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ThemeContext } from "../context/ThemeContext";
+import Swal from "sweetalert2";
 
 export default function Navbar() {
   const navigate = useNavigate();
   const handleLogout = () => {
     localStorage.removeItem("username");
-    navigate("/login");
+    Swal.fire({
+      title: "Logged out!",
+      text: "You have been logged out successfully.",
+      icon: "success",
+      confirmButtonText: "Okay",
+    }).then(() => {
+      navigate("/login");
+    });
   };
 
   const { pathname } = useLocation();
