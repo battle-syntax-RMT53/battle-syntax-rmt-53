@@ -118,11 +118,11 @@ export default function Battlepage() {
     const inputArray = userInput.split("");
 
     return textArray.map((char, index) => {
-      let className = "";
+      let className = "font-bold text-lg";
       if (inputArray[index] === char) {
-        className = "text-green-200";
+        className = "font-bold text-lg text-green-500";
       } else if (inputArray[index] !== undefined) {
-        className = "text-red-800";
+        className = "font-bold text-lg text-red-500";
       }
 
       return (
@@ -166,14 +166,14 @@ export default function Battlepage() {
         <div className="flex flex-col justify-center items-center gap-4">
           <p>Your Health: {creatorHealth}</p>
           <p>Enemy Health: {participantHealth}</p>
-          <div className="bg-secondary px-5 py-3 rounded-md">
+          <div className="bg-base-300 px-5 py-3 rounded-md">
             {getHighlightedText()}
           </div>
           <input
             type="text"
             value={userInput}
             onChange={handleChange}
-            className="w-full rounded-md px-4"
+            className="w-full rounded-md px-4 border-2"
           />
         </div>
       ) : (
