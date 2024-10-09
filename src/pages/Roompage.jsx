@@ -101,7 +101,7 @@ const RoomPage = () => {
             icon: "error",
             confirmButtonText: "OK",
           });
-          return; // Return without changes
+          throw new Error; // Return without changes
         }
 
         // Update room
