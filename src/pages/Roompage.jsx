@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { ref, set, onValue } from "firebase/database";
-import db from "../firebase";
+import { ref, set, onValue, runTransaction } from "firebase/database";
+import db from "../firebase"; // Pastikan ini diatur dengan benar
 import { useNavigate } from "react-router-dom";
 
 const RoomPage = () => {
@@ -9,6 +9,13 @@ const RoomPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const storedUsername = localStorage.getItem("username");
+    if (!storedUsername) {
+      alert("You need to log in first!");
+      navigate("/login"); // Redirect ke halaman login
+      return;
+    }
+
     const roomsRef = ref(db, "rooms/");
     onValue(roomsRef, (snapshot) => {
       const data = snapshot.val();
@@ -17,17 +24,25 @@ const RoomPage = () => {
         : [];
       setRooms(roomsArray);
     });
-  }, []);
+  }, [navigate]);
 
   const createRoom = () => {
-    const roomId = Date.now();
+    if (!roomName) {
+      alert("Please enter a room name");
+      return;
+    }
+
+    const roomId = Date.now().toString();
+    const storedUsername = localStorage.getItem("username");
+
     set(ref(db, "rooms/" + roomId), {
       name: roomName,
       createdAt: new Date().toISOString(),
       users: 1,
+      creator: storedUsername, // Menyimpan username pembuat room
     })
       .then(() => {
-        navigate(`/room/${roomId}`);
+        navigate(`/rooms/${roomId}`);
       })
       .catch((error) => {
         console.error("Error creating room: ", error);
@@ -36,23 +51,30 @@ const RoomPage = () => {
 
   const joinRoom = (roomId) => {
     const roomRef = ref(db, `rooms/${roomId}`);
-    onValue(roomRef, (snapshot) => {
-      const room = snapshot.val();
-      if (room && room.users < 2) {
-        set(ref(db, `rooms/${roomId}`), {
-          ...room,
-          users: room.users + 1,
-        })
-          .then(() => {
-            navigate(`/room/${roomId}`);
-          })
-          .catch((error) => {
-            console.error("Error joining room: ", error);
-          });
-      } else {
-        alert("Room is full or does not exist.");
+
+    runTransaction(roomRef, (room) => {
+      if (room) {
+        const storedUsername = localStorage.getItem("username");
+
+        // Cek jika room sudah penuh
+        if (room.users >= 2) {
+          alert("Room is full.");
+          return; // Kembali tanpa perubahan
+        }
+
+        // Update room
+        room.users += 1; // Tambah pengguna
+        room.participants = room.participants || []; // Inisialisasi jika belum ada
+        room.participants.push(storedUsername); // Tambah pengguna ke daftar peserta
       }
-    });
+      return room; // Kembalikan room yang sudah diupdate
+    })
+      .then(() => {
+        navigate(`/rooms/${roomId}`); // Arahkan ke halaman battle
+      })
+      .catch((error) => {
+        console.error("Error joining room: ", error);
+      });
   };
 
   return (
@@ -78,6 +100,8 @@ const RoomPage = () => {
             key={room.id}
             className="bg-white border border-gray-300 rounded-lg p-4 m-2 w-64"
           >
+            <h3 className="font-bold">Room Name: {room.name}</h3>{" "}
+            {/* Tampilkan nama room */}
             <h3 className="font-bold">Room ID: {room.id}</h3>
             <p>Users: {room.users} / 2</p>
             <button
