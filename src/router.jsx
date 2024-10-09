@@ -3,15 +3,17 @@ import Homepage from "./pages/Homepage";
 import Navbar from "./Components/Navbar";
 import LoginPage from "./pages/LoginPage";
 import RoomPage from "./pages/Roompage";
+import Battlepage from "./pages/Battlepage";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: 
-    <>
-    <Navbar/>
-    <Homepage />
-    </>
+    element: (
+      <>
+        <Navbar />
+        <Homepage />
+      </>
+    ),
   },
   {
     path: "/login",
@@ -20,6 +22,10 @@ const router = createBrowserRouter([
   {
     path: "/room",
     element: <RoomPage />,
+  },
+  {
+    path: "/game",
+    element: <Battlepage />,
   },
 ]);
 
