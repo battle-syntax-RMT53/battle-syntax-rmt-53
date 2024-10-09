@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+// import { themeContext } from "../App";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -23,8 +24,13 @@ export default function LoginPage() {
     }
   };
 
+  const { theme } = useContext(themeContext);
+
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gray-100 gap-6">
+    <div
+      className="flex flex-col items-center justify-center h-screen bg-gray-100 gap-6"
+      data-theme={theme}
+    >
       <h1 className="text-3xl font-bold">Login</h1>
       <label className="input input-bordered flex items-center gap-2">
         <svg
