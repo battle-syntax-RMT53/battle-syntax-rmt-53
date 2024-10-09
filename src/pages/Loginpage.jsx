@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { ThemeContext } from "../context/themeContext";
+import { ThemeContext } from "../context/ThemeContext";
 
 
 export default function LoginPage() {
