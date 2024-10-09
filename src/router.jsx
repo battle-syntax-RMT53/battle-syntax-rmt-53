@@ -2,7 +2,7 @@ import { createBrowserRouter, redirect } from "react-router-dom";
 import Homepage from "./pages/Homepage";
 import Loginpage from "./pages/Loginpage";
 import Roompage from "./pages/Roompage";
-import BattlePage from "./pages/Battlepage";
+import Battlepage from "./pages/Battlepage";
 import Layout from "./layouts/rootLayouts";
 
 export const router = createBrowserRouter([
@@ -27,7 +27,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "rooms/:roomId", // Tambahkan route untuk BattlePage
-        element: <BattlePage />,
+        element: <Battlepage />,
         loader: () => {
           const access_token = localStorage.getItem("username");
           if (!access_token) {
