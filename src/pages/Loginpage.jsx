@@ -1,8 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { ThemeContext } from "../context/themeContext";
-
+import { ThemeContext } from "../context/ThemeContext";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -20,6 +19,14 @@ export default function LoginPage() {
   const handleLogin = () => {
     if (username) {
       localStorage.setItem("username", username); // Simpan username di localStorage
+      Swal.fire({
+        title: "Success!",
+        text: "You have logged in successfully.",
+        icon: "success",
+        confirmButtonText: "OK",
+      }).then(() => {
+        navigate("/rooms");
+      });
       navigate("/rooms");
     } else {
       Swal.fire({
@@ -35,10 +42,10 @@ export default function LoginPage() {
 
   return (
     <div
-      className="flex flex-col items-center justify-center h-screen bg-gray-100 gap-6"
+      className="flex flex-col items-center justify-center h-screen gap-6"
       data-theme={theme}
     >
-      <h1 className="text-3xl font-bold">Login</h1>
+      <h1 className="text-3xl font-bold">Login And Start Playing!</h1>
       <label className="input input-bordered flex items-center gap-2">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -56,8 +63,8 @@ export default function LoginPage() {
           onChange={(e) => setUsername(e.target.value)}
         />
       </label>
-      <button onClick={handleLogin} className="btn btn-primary px-8">
-        Login
+      <button onClick={handleLogin} className="btn btn-primary px-8 font-bold">
+        LOGIN
       </button>
     </div>
   );
