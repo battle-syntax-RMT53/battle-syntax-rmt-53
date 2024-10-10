@@ -166,7 +166,7 @@ export default function Battlepage() {
         <div className="flex flex-col justify-center items-center gap-4">
           <p>Your Health: {creatorHealth}</p>
           <p>Enemy Health: {participantHealth}</p>
-          <div className="bg-base-300 px-5 py-3 rounded-md">
+          <div className="bg-base-300 px-5 py-3 rounded-md select-none">
             {getHighlightedText()}
           </div>
           <input
