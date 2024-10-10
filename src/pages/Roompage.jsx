@@ -27,7 +27,8 @@ const RoomPage = () => {
     });
   }, [navigate]);
 
-  const createRoom = () => {
+  const createRoom = (e) => {
+    e.preventDefault();
     if (!roomName) {
       Swal.fire({
         title: "Warning!",
@@ -124,19 +125,21 @@ const RoomPage = () => {
   return (
     <div className="flex flex-col items-center justify-center h-screen">
       <h1 className="text-3xl font-bold mb-6">Battle Syntax Rooms</h1>
-      <input
-        type="text"
-        placeholder="Room Name"
-        value={roomName}
-        onChange={(e) => setRoomName(e.target.value)}
-        className="border border-gray-300 rounded-lg p-2 mb-4 w-64"
-      />
-      <button
-        onClick={createRoom}
-        className="bg-primary text-primary-content font-semibold py-2 px-4 rounded-lg mb-4"
-      >
-        Create Room
-      </button>
+      <form onSubmit={createRoom} className="flex flex-col items-center gap-2">
+        <input
+          type="text"
+          placeholder="Room Name"
+          value={roomName}
+          onChange={(e) => setRoomName(e.target.value)}
+          className="border border-gray-300 rounded-lg p-2 mb-4 w-64"
+        />
+        <button
+          type="submit"
+          className="bg-primary text-primary-content font-semibold py-2 px-4 rounded-lg mb-4"
+        >
+          Create Room
+        </button>
+      </form>
       {rooms.length > 0 && (
         <h2 className="text-xl font-semibold mb-4 mt-10">Available Rooms</h2>
       )}
